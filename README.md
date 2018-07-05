@@ -1,4 +1,4 @@
-# gotham-jwt-middleware
+# gotham-middleware-jwt
 
 A middleware for the [Gotham][gotham] Web Framework that verifies JSON
 Web Tokens, returning `StatusCode::Unauthorized` if a request fails
