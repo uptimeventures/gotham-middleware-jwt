@@ -4,10 +4,15 @@ A middleware for the [Gotham][gotham] Web Framework that verifies JSON
 Web Tokens, returning `StatusCode::Unauthorized` if a request fails
 validation.
 
+**Compatibility Note:** This library currently uses Gotham 0.3 features, which
+require building from `master`.
+
 ## Usage
 
-The following is a minimal installation example. `Claims`, in this
-scope, is any struct you wish to deserialize into.
+First, add `gotham_middleware_jwt = "0.1"` to `Cargo.toml`.
+
+Second, create a struct you wish to deserialize into. For our example below,
+we've used `Claims`:
 
 ```rust
 extern crate gotham;
