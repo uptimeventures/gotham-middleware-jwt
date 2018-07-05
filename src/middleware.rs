@@ -51,7 +51,6 @@ where
     where
         Chain: FnOnce(State) -> Box<HandlerFuture>,
     {
-
         trace!("[{}] pre-chain authentication", request_id(&state));
         let token = {
             Headers::borrow_from(&state)
