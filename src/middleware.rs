@@ -62,11 +62,11 @@ where
         match decode::<T>(&token, self.secret.as_ref(), &self.validation) {
             Ok(_token) => Box::new(chain(state).and_then(|(state, response)| {
                 trace!("[{}] post-chain jwt middleware", request_id(&state));
-                future::ok((state, response))
+                Box::new(future::ok((state, response)))
             })),
             Err(_) => {
                 let res = create_response(&state, StatusCode::Unauthorized, None);
-                return Box::new(future::ok((state, res)));
+                Box::new(future::ok((state, res)))
             }
         }
     }
@@ -80,7 +80,7 @@ where
 
     fn new_middleware(&self) -> io::Result<Self::Instance> {
         Ok(JWTMiddleware {
-            secret: self.secret.clone(),
+            secret: self.secret,
             validation: self.validation.clone(),
             claims: PhantomData,
         })
