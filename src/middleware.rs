@@ -98,9 +98,30 @@ mod tests {
     use hyper::{
         header::{Authorization, Bearer}, StatusCode,
     };
+    use jsonwebtoken::{encode, Algorithm, Header};
 
-    #[derive(Debug, Deserialize)]
-    pub struct Claims {}
+    #[derive(Debug, Deserialize, Serialize)]
+    pub struct Claims {
+        sub: String,
+    }
+
+    fn token() -> String {
+        let claims = &Claims {
+            sub: "test@example.net".to_owned(),
+        };
+        let secret = "some-secret";
+
+        let mut header = Header::default();
+        header.kid = Some("signing-key".to_owned());
+        header.alg = Algorithm::HS256;
+
+        let token = match encode(&header, &claims, secret.as_ref()) {
+            Ok(t) => t,
+            Err(_) => panic!(),
+        };
+
+        token
+    }
 
     fn handler(state: State) -> Box<HandlerFuture> {
         let res = create_response(&state, StatusCode::Ok, None);
@@ -168,7 +189,9 @@ mod tests {
         let res = test_server
             .client()
             .get("https://example.com")
-            .with_header(Authorization(Bearer{token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MzA4MjcyNjQsImlhdCI6MTUzMDgyNTQ2NCwiaXNzIjoidXB0aW1lLnZlbnR1cmVzIiwic3ViIjoidGVzdEB1cHRpbWUudmVudHVyZXMifQ.PBnfs1fzql53EmywyQzmCHYVr4om9wUqfzRM6uRBtug".to_string()}))
+            .with_header(Authorization(Bearer {
+                token: token().to_string(),
+            }))
             .perform()
             .unwrap();
 
