@@ -5,11 +5,14 @@
 // https://opensource.org/licenses/BSD-3-Clause to acquire a copy.
 use futures::{future, Future};
 use gotham::{
-    handler::HandlerFuture, helpers::http::response::create_response,
-    middleware::{Middleware, NewMiddleware}, state::{request_id, FromState, State},
+    handler::HandlerFuture,
+    helpers::http::response::create_response,
+    middleware::{Middleware, NewMiddleware},
+    state::{request_id, FromState, State},
 };
 use hyper::{
-    header::{Authorization, Bearer, Headers}, StatusCode,
+    header::{Authorization, Bearer, Headers},
+    StatusCode,
 };
 use jsonwebtoken::{decode, Validation};
 use serde::de::Deserialize;
@@ -92,11 +95,15 @@ mod tests {
     use super::*;
     use futures::future;
     use gotham::{
-        handler::HandlerFuture, pipeline::{new_pipeline, single::*}, router::{builder::*, Router},
-        state::State, test::TestServer,
+        handler::HandlerFuture,
+        pipeline::{new_pipeline, single::*},
+        router::{builder::*, Router},
+        state::State,
+        test::TestServer,
     };
     use hyper::{
-        header::{Authorization, Bearer}, StatusCode,
+        header::{Authorization, Bearer},
+        StatusCode,
     };
     use jsonwebtoken::{encode, Algorithm, Header};
 
@@ -189,9 +196,7 @@ mod tests {
         let res = test_server
             .client()
             .get("https://example.com")
-            .with_header(Authorization(Bearer {
-                token: token().to_string(),
-            }))
+            .with_header(Authorization(Bearer { token: token() }))
             .perform()
             .unwrap();
 
