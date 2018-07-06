@@ -16,6 +16,7 @@ use hyper::{
 };
 use jsonwebtoken::{decode, Validation};
 use serde::de::Deserialize;
+use state_data::AuthorizationToken;
 use std::io;
 use std::marker::PhantomData;
 use std::panic::RefUnwindSafe;
@@ -48,9 +49,9 @@ where
 
 impl<T> Middleware for JWTMiddleware<T>
 where
-    T: for<'de> Deserialize<'de> + Send + Sync,
+    T: for<'de> Deserialize<'de> + Send + Sync + 'static,
 {
-    fn call<Chain>(self, state: State, chain: Chain) -> Box<HandlerFuture>
+    fn call<Chain>(self, mut state: State, chain: Chain) -> Box<HandlerFuture>
     where
         Chain: FnOnce(State) -> Box<HandlerFuture>,
     {
@@ -63,10 +64,13 @@ where
         };
 
         match decode::<T>(&token, self.secret.as_ref(), &self.validation) {
-            Ok(_token) => Box::new(chain(state).and_then(|(state, response)| {
-                trace!("[{}] post-chain jwt middleware", request_id(&state));
-                Box::new(future::ok((state, response)))
-            })),
+            Ok(token) => {
+                state.put(AuthorizationToken::<T>::new(token));
+                Box::new(chain(state).and_then(|(state, res)| {
+                    trace!("[{}] post-chain jwt middleware", request_id(&state));
+                    future::ok((state, res))
+                }))
+            }
             Err(_) => {
                 let res = create_response(&state, StatusCode::Unauthorized, None);
                 Box::new(future::ok((state, res)))
@@ -77,7 +81,7 @@ where
 
 impl<T> NewMiddleware for JWTMiddleware<T>
 where
-    T: for<'de> Deserialize<'de> + RefUnwindSafe + Send + Sync,
+    T: for<'de> Deserialize<'de> + RefUnwindSafe + Send + Sync + 'static,
 {
     type Instance = JWTMiddleware<T>;
 
@@ -107,6 +111,8 @@ mod tests {
     };
     use jsonwebtoken::{encode, Algorithm, Header};
 
+    const SECRET: &'static str = "some-secret";
+
     #[derive(Debug, Deserialize, Serialize)]
     pub struct Claims {
         sub: String,
@@ -116,13 +122,12 @@ mod tests {
         let claims = &Claims {
             sub: "test@example.net".to_owned(),
         };
-        let secret = "some-secret";
 
         let mut header = Header::default();
         header.kid = Some("signing-key".to_owned());
         header.alg = alg;
 
-        let token = match encode(&header, &claims, secret.as_ref()) {
+        let token = match encode(&header, &claims, SECRET.as_ref()) {
             Ok(t) => t,
             Err(_) => panic!(),
         };
@@ -131,17 +136,19 @@ mod tests {
     }
 
     fn handler(state: State) -> Box<HandlerFuture> {
+        {
+            // If this compiles, the token is available.
+            let _ = AuthorizationToken::<Claims>::borrow_from(&state);
+        }
         let res = create_response(&state, StatusCode::Ok, None);
         Box::new(future::ok((state, res)))
     }
 
     fn router() -> Router {
-        let secret = "some-secret".as_ref();
-
         // Create JWTMiddleware with HS256 algorithm (default).
         let (chain, pipelines) = single_pipeline(
             new_pipeline()
-                .add(JWTMiddleware::<Claims>::new(secret))
+                .add(JWTMiddleware::<Claims>::new(SECRET.as_ref()))
                 .build(),
         );
 
@@ -196,7 +203,9 @@ mod tests {
         let res = test_server
             .client()
             .get("https://example.com")
-            .with_header(Authorization(Bearer { token: token(Algorithm::HS256) }))
+            .with_header(Authorization(Bearer {
+                token: token(Algorithm::HS256),
+            }))
             .perform()
             .unwrap();
 
