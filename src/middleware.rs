@@ -112,7 +112,7 @@ mod tests {
         sub: String,
     }
 
-    fn token() -> String {
+    fn token(alg: Algorithm) -> String {
         let claims = &Claims {
             sub: "test@example.net".to_owned(),
         };
@@ -120,7 +120,7 @@ mod tests {
 
         let mut header = Header::default();
         header.kid = Some("signing-key".to_owned());
-        header.alg = Algorithm::HS256;
+        header.alg = alg;
 
         let token = match encode(&header, &claims, secret.as_ref()) {
             Ok(t) => t,
@@ -196,7 +196,7 @@ mod tests {
         let res = test_server
             .client()
             .get("https://example.com")
-            .with_header(Authorization(Bearer { token: token() }))
+            .with_header(Authorization(Bearer { token: token(Algorithm::HS256) }))
             .perform()
             .unwrap();
 
