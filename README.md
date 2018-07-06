@@ -29,13 +29,19 @@ use gotham::{
     },
     router::{builder::*, Router}, state::State,
 };
-use gotham_middleware_jwt::JWTMiddleware;
+use gotham_middleware_jwt::{JWTMiddleware, AuthorizationToken};
 use hyper::{Response, StatusCode};
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct Claims {}
+pub struct Claims {
+  sub: String,
+}
 
 fn handler(state: State) -> (State, Response) {
+    {
+        let auth = AuthorizationToken::<Claims>::borrow_from(&state);
+        // auth.token -> TokenData
+    }
     let res = create_response(&state, StatusCode::Ok, None);
     (state, res)
 }

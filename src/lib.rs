@@ -11,6 +11,8 @@
 #![warn(missing_docs, deprecated)]
 extern crate futures;
 extern crate gotham;
+#[macro_use]
+extern crate gotham_derive;
 extern crate hyper;
 extern crate jsonwebtoken;
 extern crate serde;
@@ -21,5 +23,7 @@ extern crate log;
 extern crate serde_derive;
 
 mod middleware;
+mod state_data;
 
 pub use middleware::JWTMiddleware;
+pub use state_data::AuthorizationToken;
