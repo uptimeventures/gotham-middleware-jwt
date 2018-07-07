@@ -66,10 +66,13 @@ where
         match decode::<T>(&token, self.secret.as_ref(), &self.validation) {
             Ok(token) => {
                 state.put(AuthorizationToken::<T>::new(token));
-                Box::new(chain(state).and_then(|(state, res)| {
+
+                let res = chain(state).and_then(|(state, res)| {
                     trace!("[{}] post-chain jwt middleware", request_id(&state));
                     future::ok((state, res))
-                }))
+                });
+
+                Box::new(res)
             }
             Err(_) => {
                 let res = create_response(&state, StatusCode::Unauthorized, None);
