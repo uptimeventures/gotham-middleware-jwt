@@ -2,6 +2,11 @@
 name = "gotham_middleware_jwt"
 version = "0.1.0"
 authors = ["Nicholas Young <nyoung@uptime.ventures>"]
+description = "JWT middleware for the Gotham web framework."
+repository = "https://gitlab.com/uptimeventures/gotham-middleware-jwt"
+keywords = ["gotham", "gotham-rs", "jwt", "jsonwebtoken", "authentication"]
+readme = "README.md"
+license = "BSD-3-Clause"
 
 [dependencies]
 futures = "0.1"
