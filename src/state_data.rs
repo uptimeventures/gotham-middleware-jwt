@@ -3,9 +3,6 @@
 // Released under a 3-Clause BSD License. See the LICENSE file
 // at the top of this source tree. Alternatively, visit
 // https://opensource.org/licenses/BSD-3-Clause to acquire a copy.
-
-//! Contains utilities for storing authentication token
-//! in Gotham's `State`.
 pub use jsonwebtoken::TokenData;
 
 /// Struct to contain the JSON Web Token on a per-request basis.
