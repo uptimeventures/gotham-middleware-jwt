@@ -3,27 +3,27 @@
 // Released under a 3-Clause BSD License. See the LICENSE file
 // at the top of this source tree. Alternatively, visit
 // https://opensource.org/licenses/BSD-3-Clause to acquire a copy.
+use crate::state_data::AuthorizationToken;
 use futures::{future, Future};
 use gotham::{
     handler::HandlerFuture,
-    helpers::http::response::create_response,
+    helpers::http::response::create_empty_response,
     middleware::{Middleware, NewMiddleware},
     state::{request_id, FromState, State},
 };
 use hyper::{
-    header::{Authorization, Bearer, Headers},
+    header::{HeaderMap, AUTHORIZATION},
     StatusCode,
 };
 use jsonwebtoken::{decode, Validation};
 use serde::de::Deserialize;
-use crate::state_data::AuthorizationToken;
 use std::io;
 use std::marker::PhantomData;
 use std::panic::RefUnwindSafe;
 
 /// Verifies JSON Web tokens provided via the `Authorization`
 /// header, allowing valid requests to pass. Other requests are
-/// returned as `StatusCode::Unauthorized`.
+/// returned as `StatusCode::UNAUTHORIZED`.
 pub struct JWTMiddleware<T> {
     secret: &'static str,
     validation: Validation,
@@ -56,11 +56,26 @@ where
         Chain: FnOnce(State) -> Box<HandlerFuture>,
     {
         trace!("[{}] pre-chain authentication", request_id(&state));
+
         let token = {
-            Headers::borrow_from(&state)
-                .get::<Authorization<Bearer>>()
-                .map(|a| a.token.to_owned())
-                .unwrap_or_else(|| "".to_owned())
+            let header = HeaderMap::borrow_from(&state).get(AUTHORIZATION);
+
+            match header {
+                Some(h) => match h.to_str() {
+                    Ok(hx) => {
+                        let parts: Vec<&str> = hx.rsplit(": ").collect();
+                        parts[0]
+                    }
+                    Err(_) => {
+                        let res = create_empty_response(&state, StatusCode::UNAUTHORIZED);
+                        return Box::new(future::ok((state, res)));
+                    }
+                },
+                None => {
+                    let res = create_empty_response(&state, StatusCode::UNAUTHORIZED);
+                    return Box::new(future::ok((state, res)));
+                }
+            }
         };
 
         match decode::<T>(&token, self.secret.as_ref(), &self.validation) {
@@ -75,7 +90,7 @@ where
                 Box::new(res)
             }
             Err(_) => {
-                let res = create_response(&state, StatusCode::Unauthorized, None);
+                let res = create_empty_response(&state, StatusCode::UNAUTHORIZED);
                 Box::new(future::ok((state, res)))
             }
         }
@@ -108,10 +123,6 @@ mod tests {
         state::State,
         test::TestServer,
     };
-    use hyper::{
-        header::{Authorization, Bearer},
-        StatusCode,
-    };
     use jsonwebtoken::{encode, Algorithm, Header};
 
     const SECRET: &'static str = "some-secret";
@@ -143,7 +154,7 @@ mod tests {
             // If this compiles, the token is available.
             let _ = AuthorizationToken::<Claims>::borrow_from(&state);
         }
-        let res = create_response(&state, StatusCode::Ok, None);
+        let res = create_empty_response(&state, StatusCode::OK);
         Box::new(future::ok((state, res)))
     }
 
@@ -161,7 +172,7 @@ mod tests {
     }
 
     #[test]
-    fn jwt_middleware_no_token_test() {
+    fn jwt_middleware_no_header_test() {
         let test_server = TestServer::new(router()).unwrap();
         let res = test_server
             .client()
@@ -169,7 +180,33 @@ mod tests {
             .perform()
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Unauthorized);
+        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+    }
+
+    #[test]
+    fn jwt_middleware_no_value_test() {
+        let test_server = TestServer::new(router()).unwrap();
+        let res = test_server
+            .client()
+            .get("https://example.com")
+            .with_header(AUTHORIZATION, format!("").parse().unwrap())
+            .perform()
+            .unwrap();
+
+        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+    }
+
+    #[test]
+    fn jwt_middleware_no_token_test() {
+        let test_server = TestServer::new(router()).unwrap();
+        let res = test_server
+            .client()
+            .get("https://example.com")
+            .with_header(AUTHORIZATION, format!("Bearer ").parse().unwrap())
+            .perform()
+            .unwrap();
+
+        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
     }
 
     #[test]
@@ -178,13 +215,24 @@ mod tests {
         let res = test_server
             .client()
             .get("https://example.com")
-            .with_header(Authorization(Bearer {
-                token: "xxxx".to_string(),
-            }))
+            .with_header(AUTHORIZATION, format!("Bearer xxxx").parse().unwrap())
             .perform()
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Unauthorized);
+        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+    }
+
+    #[test]
+    fn jwt_middleware_malformatted_token_no_space_test() {
+        let test_server = TestServer::new(router()).unwrap();
+        let res = test_server
+            .client()
+            .get("https://example.com")
+            .with_header(AUTHORIZATION, format!("Bearer").parse().unwrap())
+            .perform()
+            .unwrap();
+
+        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
     }
 
     #[test]
@@ -193,25 +241,25 @@ mod tests {
         let res = test_server
             .client()
             .get("https://example.com")
-            .with_header(Authorization(Bearer{token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MzA0MDE1MjcsImlhdCI6MTUzMDM5OTcyN30.lhg7K9SK3DXsvimVb6o_h6VcsINtkT-qHR-tvDH1bGI".to_string()}))
+            .with_header(AUTHORIZATION, format!("Bearer: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MzA0MDE1MjcsImlhdCI6MTUzMDM5OTcyN30.lhg7K9SK3DXsvimVb6o_h6VcsINtkT-qHR-tvDH1bGI").parse().unwrap())
             .perform()
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Unauthorized);
+        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
     }
 
     #[test]
     fn jwt_middleware_valid_token_test() {
+        let token = token(Algorithm::HS256);
         let test_server = TestServer::new(router()).unwrap();
+        println!("Requesting with token... {}", token);
         let res = test_server
             .client()
             .get("https://example.com")
-            .with_header(Authorization(Bearer {
-                token: token(Algorithm::HS256),
-            }))
+            .with_header(AUTHORIZATION, format!("Bearer: {}", token).parse().unwrap())
             .perform()
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
     }
 }
