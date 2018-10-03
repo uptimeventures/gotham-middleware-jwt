@@ -25,5 +25,5 @@ extern crate serde_derive;
 mod middleware;
 mod state_data;
 
-pub use middleware::JWTMiddleware;
-pub use state_data::AuthorizationToken;
+pub use self::middleware::JWTMiddleware;
+pub use self::state_data::AuthorizationToken;

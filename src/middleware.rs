@@ -16,7 +16,7 @@ use hyper::{
 };
 use jsonwebtoken::{decode, Validation};
 use serde::de::Deserialize;
-use state_data::AuthorizationToken;
+use crate::state_data::AuthorizationToken;
 use std::io;
 use std::marker::PhantomData;
 use std::panic::RefUnwindSafe;
