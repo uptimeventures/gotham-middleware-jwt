@@ -3,7 +3,7 @@
 // Released under a 3-Clause BSD License. See the LICENSE file
 // at the top of this source tree. Alternatively, visit
 // https://opensource.org/licenses/BSD-3-Clause to acquire a copy.
-use crate::state_data::AuthorizationToken;
+use state_data::AuthorizationToken;
 use futures::{future, Future};
 use gotham::{
     handler::HandlerFuture,
