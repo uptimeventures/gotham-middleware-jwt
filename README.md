@@ -1,5 +1,7 @@
 # gotham-middleware-jwt
 
+OUTDATED: please check the new repository at https://gitlab.com/uptimeventures/gotham-middleware-jwt/
+
 A middleware for the [Gotham][gotham] Web Framework that verifies JSON
 Web Tokens, returning `StatusCode::Unauthorized` if a request fails
 validation.
