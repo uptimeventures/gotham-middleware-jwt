@@ -66,6 +66,14 @@ fn router() -> Router {
 }
 ```
 
+## Contributing
+
+We (Uptime Ventures) welcome contributions from all. Take a look at the
+[Contributing Guide](CONTRIBUTING.md) to get started. If you're comfortable
+working on GitHub (where this project is mirrored), contribute there. Otherwise,
+primary development happens on
+[GitLab](https://gitlab.com/uptimeventures/gotham-middleware-jwt).
+
 ## License
 
 Copyright 2018 Uptime Ventures, Ltd. All rights reserved. Released under a
