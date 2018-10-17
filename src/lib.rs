@@ -4,10 +4,14 @@
 // at the top of this source tree. Alternatively, visit
 // https://opensource.org/licenses/BSD-3-Clause to acquire a copy.
 
-//! Verifies JSON Web Tokens provided via the `Authorization`
-//! header, allowing valid requests to pass through with the token
-//! data stored in `State`. Requests that lack a token or fail
-//! validation are returned as `StatusCode::Unauthorized`.
+//! Ensures that only requests with valid JSON Web Tokens
+//! included in the HTTP `Authorization` header are allowed
+//! to pass.
+//!
+//! Requests that lack a token are returned with the
+//! Status Code `400: Bad Request`. Tokens that fail
+//! validation cause the middleware to return Status Code
+//! `401: Unauthorized`.
 #![warn(missing_docs, deprecated)]
 extern crate futures;
 extern crate gotham;

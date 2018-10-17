@@ -21,9 +21,17 @@ use std::io;
 use std::marker::PhantomData;
 use std::panic::RefUnwindSafe;
 
-/// Verifies JSON Web tokens provided via the `Authorization`
-/// header, allowing valid requests to pass. Other requests are
-/// returned as `StatusCode::UNAUTHORIZED`.
+/// This middleware verifies that JSON Web Token
+/// credentials, provided via the HTTP `Authorization`
+/// header, are extracted, parsed, and validated
+/// according to best practices before passing control
+/// to middleware beneath this middleware for a given
+/// mount point.
+///
+/// Requests that lack the `Authorization` header are
+/// returned with the Status Code `400: Bad Request`.
+/// Tokens that fail validation cause the middleware
+/// to return Status Code `401: Unauthorized`.
 pub struct JWTMiddleware<T> {
     secret: &'static str,
     validation: Validation,
@@ -73,7 +81,7 @@ where
         };
 
         if token.is_none() {
-            let res = create_empty_response(&state, StatusCode::UNAUTHORIZED);
+            let res = create_empty_response(&state, StatusCode::BAD_REQUEST);
             return Box::new(future::ok((state, res)));
         }
 
@@ -179,7 +187,7 @@ mod tests {
             .perform()
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+        assert_eq!(res.status(), StatusCode::BAD_REQUEST);
     }
 
     #[test]
