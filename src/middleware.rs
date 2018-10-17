@@ -3,7 +3,6 @@
 // Released under a 3-Clause BSD License. See the LICENSE file
 // at the top of this source tree. Alternatively, visit
 // https://opensource.org/licenses/BSD-3-Clause to acquire a copy.
-use state_data::AuthorizationToken;
 use futures::{future, Future};
 use gotham::{
     handler::HandlerFuture,
@@ -17,6 +16,7 @@ use hyper::{
 };
 use jsonwebtoken::{decode, Validation};
 use serde::de::Deserialize;
+use state_data::AuthorizationToken;
 use std::io;
 use std::marker::PhantomData;
 use std::panic::RefUnwindSafe;
@@ -64,21 +64,20 @@ where
                 Some(h) => match h.to_str() {
                     Ok(hx) => {
                         let parts: Vec<&str> = hx.rsplit(": ").collect();
-                        parts[0]
+                        Some(parts[0].to_owned())
                     }
-                    Err(_) => {
-                        let res = create_empty_response(&state, StatusCode::UNAUTHORIZED);
-                        return Box::new(future::ok((state, res)));
-                    }
+                    Err(_) => None,
                 },
-                None => {
-                    let res = create_empty_response(&state, StatusCode::UNAUTHORIZED);
-                    return Box::new(future::ok((state, res)));
-                }
+                None => None,
             }
         };
 
-        match decode::<T>(&token, self.secret.as_ref(), &self.validation) {
+        if token.is_none() {
+            let res = create_empty_response(&state, StatusCode::UNAUTHORIZED);
+            return Box::new(future::ok((state, res)));
+        }
+
+        match decode::<T>(&token.unwrap(), self.secret.as_ref(), &self.validation) {
             Ok(token) => {
                 state.put(AuthorizationToken::<T>::new(token));
 
