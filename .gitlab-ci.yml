@@ -1,5 +1,12 @@
-image: "rust:latest"
-test:cargo:
+test:stable:
+  image: rust:latest
   script:
   - rustc --version && cargo --version
   - cargo test --all --verbose
+
+test:nightly:
+  image: rustlang/rust:nightly
+  script:
+  - rustc --version && cargo --version
+  - cargo test --all --verbose
+
