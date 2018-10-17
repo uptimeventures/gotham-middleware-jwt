@@ -16,7 +16,7 @@ It does, however, affect types of contributions the project accepts. For instanc
 
 If a source code host becomes the preferred one, the core team will update and release as necessary. Until then, both code hosts are considered valid.
 
-* **Do** reach out and ask the team to update GitHub if the mirror appears to be out of date. (This happens occasionally!)
+**Do** reach out and ask the team to update GitHub if the mirror appears to be out of date. (This happens occasionally!)
 
 ## Formatting
 
