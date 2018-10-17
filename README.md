@@ -7,7 +7,7 @@ License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https:/
 [![Gitlab CI Pipeline Status](https://gitlab.com/uptimeventures/gotham-middleware-jwt/badges/master/build.svg)](https://gitlab.com/uptimeventures/gotham-middleware-jwt)
 
 A middleware for the [Gotham][gotham] Web Framework that verifies JSON
-Web Tokens, returning `StatusCode::Unauthorized` if a request fails
+Web Tokens, returning `StatusCode::UNAUTHORIZED` if a request fails
 validation.
 
 ## Usage
