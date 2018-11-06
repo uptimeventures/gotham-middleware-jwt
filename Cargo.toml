@@ -1,6 +1,6 @@
 [package]
 name = "gotham-middleware-jwt"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Nicholas Young <nyoung@uptime.ventures>"]
 description = "JWT middleware for the Gotham web framework."
 repository = "https://gitlab.com/uptimeventures/gotham-middleware-jwt"
