@@ -1,10 +1,10 @@
 # gotham-middleware-jwt
 
-[![Made by Uptime
-Ventures](https://img.shields.io/badge/made_by-Uptime_Ventures-fcb040.svg)](https://www.uptime.ventures)
+[![Gitlab CI Pipeline Status](https://gitlab.com/uptimeventures/gotham-middleware-jwt/badges/master/build.svg)](https://gitlab.com/uptimeventures/gotham-middleware-jwt/pipelines?scope=branches)
 [![BSD 3-Clause
 License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://spdx.org/licenses/BSD-3-Clause.html)
-[![Gitlab CI Pipeline Status](https://gitlab.com/uptimeventures/gotham-middleware-jwt/badges/master/build.svg)](https://gitlab.com/uptimeventures/gotham-middleware-jwt)
+[![Made by Uptime
+Ventures](https://img.shields.io/badge/made_by-Uptime_Ventures-fcb040.svg)](https://www.uptime.ventures)
 
 A middleware for the [Gotham][gotham] Web Framework that verifies JSON
 Web Tokens, returning `StatusCode::UNAUTHORIZED` if a request fails
