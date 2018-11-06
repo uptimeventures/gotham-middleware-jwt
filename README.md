@@ -12,9 +12,8 @@ validation.
 
 ## Usage
 
-First, at least until Gotham `0.3` is published, add
-`gotham-middleware-jwt = { git =
-"https://gitlab.com/uptimeventures/gotham-middleware-jwt", branch = "master" }` to `Cargo.toml`.
+First, ensure you're using at least Gotham version `0.3`. Then, add the
+following to your `Cargo.toml`: `gotham-middleware-jwt = "0.2"`.
 
 Second, create a struct you wish to deserialize into. For our example below,
 we've used `Claims`:
