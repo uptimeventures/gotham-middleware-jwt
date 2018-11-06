@@ -1,4 +1,4 @@
-# gotham-middleware-jwt
+# JWT Authentication Middleware
 
 [![Gitlab CI Pipeline Status](https://gitlab.com/uptimeventures/gotham-middleware-jwt/badges/master/build.svg)](https://gitlab.com/uptimeventures/gotham-middleware-jwt/pipelines?scope=branches)
 [![BSD 3-Clause
@@ -13,7 +13,7 @@ validation.
 ## Usage
 
 First, ensure you're using at least Gotham version `0.3`. Then, add the
-following to your `Cargo.toml`: `gotham-middleware-jwt = "0.2"`.
+following to your `Cargo.toml`: `gotham_middleware_jwt = "0.2"`.
 
 Second, create a struct you wish to deserialize into. For our example below,
 we've used `Claims`:
