@@ -3,6 +3,7 @@
 [![GitLab CI Pipeline Status](https://gitlab.com/uptimeventures/gotham-middleware-jwt/badges/master/pipeline.svg)](https://gitlab.com/uptimeventures/gotham-middleware-jwt/commits/master)
 [![BSD 3-Clause
 License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://spdx.org/licenses/BSD-3-Clause.html)
+[![Dependency Status](https://deps.rs/repo/gitlab/uptimeventures/gotham-middleware-jwt/status.svg)](https://deps.rs/repo/gitlab/uptimeventures/gotham-middleware-jwt)
 [![Made by Uptime
 Ventures](https://img.shields.io/badge/made_by-Uptime_Ventures-fcb040.svg)](https://www.uptime.ventures)
 
