@@ -1,6 +1,6 @@
 # JWT Authentication Middleware
 
-[![Gitlab CI Pipeline Status](https://gitlab.com/uptimeventures/gotham-middleware-jwt/badges/master/build.svg)](https://gitlab.com/uptimeventures/gotham-middleware-jwt/pipelines?scope=branches)
+[![GitLab CI Pipeline Status](https://gitlab.com/uptimeventures/gotham-middleware-jwt/badges/master/pipeline.svg)](https://gitlab.com/uptimeventures/gotham-middleware-jwt/commits/master)
 [![BSD 3-Clause
 License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://spdx.org/licenses/BSD-3-Clause.html)
 [![Made by Uptime
