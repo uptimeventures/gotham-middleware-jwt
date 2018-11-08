@@ -53,6 +53,12 @@ where
             claims: PhantomData,
         }
     }
+
+    /// Create a new instance of the middleware by appending new
+    /// validation constraints.
+    pub fn validation(self, validation: Validation) -> Self {
+        JWTMiddleware { validation, ..self }
+    }
 }
 
 impl<T> Middleware for JWTMiddleware<T>
@@ -65,7 +71,7 @@ where
     {
         trace!("[{}] pre-chain authentication", request_id(&state));
 
-        let token = {
+        let token: Option<String> = {
             let header = HeaderMap::borrow_from(&state).get(AUTHORIZATION);
 
             match header {
@@ -96,7 +102,8 @@ where
 
                 Box::new(res)
             }
-            Err(_) => {
+            Err(e) => {
+                trace!("[{}] error jwt middleware", e);
                 let res = create_empty_response(&state, StatusCode::UNAUTHORIZED);
                 Box::new(future::ok((state, res)))
             }
@@ -137,11 +144,13 @@ mod tests {
     #[derive(Debug, Deserialize, Serialize)]
     pub struct Claims {
         sub: String,
+        exp: usize,
     }
 
     fn token(alg: Algorithm) -> String {
         let claims = &Claims {
             sub: "test@example.net".to_owned(),
+            exp: 10000000000,
         };
 
         let mut header = Header::default();
@@ -167,11 +176,13 @@ mod tests {
 
     fn router() -> Router {
         // Create JWTMiddleware with HS256 algorithm (default).
-        let (chain, pipelines) = single_pipeline(
-            new_pipeline()
-                .add(JWTMiddleware::<Claims>::new(SECRET.as_ref()))
-                .build(),
-        );
+        let valid = Validation {
+            ..Validation::default()
+        };
+
+        let middleware = JWTMiddleware::<Claims>::new(SECRET.as_ref()).validation(valid);
+
+        let (chain, pipelines) = single_pipeline(new_pipeline().add(middleware).build());
 
         build_router(chain, pipelines, |route| {
             route.get("/").to(handler);
