@@ -32,6 +32,57 @@ use std::panic::RefUnwindSafe;
 /// returned with the Status Code `400: Bad Request`.
 /// Tokens that fail validation cause the middleware
 /// to return Status Code `401: Unauthorized`.
+///
+/// Example:
+/// ```rust
+/// extern crate gotham;
+/// extern crate gotham_middleware_jwt;
+/// extern crate hyper;
+/// extern crate serde;
+/// #[macro_use]
+/// extern crate serde_derive;
+///
+/// use gotham::{
+///     helpers::http::response::create_empty_response,
+///     pipeline::{
+///         new_pipeline,
+///         set::{finalize_pipeline_set, new_pipeline_set},
+///     },
+///     router::{builder::*, Router},
+///     state::State,
+/// };
+/// use gotham_middleware_wt::{JWTMiddleware, AuthorizationToken};
+/// use hyper::{Response, StatusCode};
+///
+/// #[derive(Deserialize, Debug)]
+/// struct Claims {
+///     sub: String,
+///     exp: usize,
+/// }
+///
+/// fn handler(state: State) -> (State, Response) {
+///     {
+///         let token = AuthorizationToken::<Claims>::borrow_from(&state);
+///         // auth.token -> TokenData
+///     }
+///     let res = create_empty_response(&state, StatusCode::OK);
+///     (state, res)
+/// }
+///
+/// fn router() -> Router {
+///     let pipelines = new_pipeline_set();
+///     let (pipelines, defaults) = pipelines.add(
+///         new_pipeline()
+///             .add(JWTMiddleware::<Claims>::new("secret".as_ref()))
+///             .build(),
+///     );
+///     let default_chain = (defaults, ());
+///     let pipeline_set = finalize_pipeline_set(pipelines);
+///     build_router(default_chain, pipeline_set, |route| {
+///         route.get("/").to(handler);
+///     });
+/// }
+/// ```
 pub struct JWTMiddleware<T> {
     secret: &'static str,
     validation: Validation,

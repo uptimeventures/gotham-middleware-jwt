@@ -40,6 +40,7 @@ use hyper::{Response, StatusCode};
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Claims {
   sub: String,
+  exp: usize,
 }
 
 fn handler(state: State) -> (State, Response) {
@@ -47,7 +48,7 @@ fn handler(state: State) -> (State, Response) {
         let auth = AuthorizationToken::<Claims>::borrow_from(&state);
         // auth.token -> TokenData
     }
-    let res = create_response(&state, StatusCode::Ok, None);
+    let res = create_empty_response(&state, StatusCode::OK);
     (state, res)
 }
 
