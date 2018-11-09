@@ -17,9 +17,7 @@ use hyper::{
 use jsonwebtoken::{decode, Validation};
 use serde::de::Deserialize;
 use state_data::AuthorizationToken;
-use std::io;
-use std::marker::PhantomData;
-use std::panic::RefUnwindSafe;
+use std::{io, marker::PhantomData, panic::RefUnwindSafe};
 
 /// This middleware verifies that JSON Web Token
 /// credentials, provided via the HTTP `Authorization`
