@@ -35,6 +35,7 @@ use std::panic::RefUnwindSafe;
 ///
 /// Example:
 /// ```rust
+/// extern crate futures;
 /// extern crate gotham;
 /// extern crate gotham_middleware_jwt;
 /// extern crate hyper;
@@ -42,16 +43,18 @@ use std::panic::RefUnwindSafe;
 /// #[macro_use]
 /// extern crate serde_derive;
 ///
+/// use futures::future;
 /// use gotham::{
 ///     helpers::http::response::create_empty_response,
+///     handler::HandlerFuture,
 ///     pipeline::{
 ///         new_pipeline,
 ///         set::{finalize_pipeline_set, new_pipeline_set},
 ///     },
 ///     router::{builder::*, Router},
-///     state::State,
+///     state::{State, FromState},
 /// };
-/// use gotham_middleware_wt::{JWTMiddleware, AuthorizationToken};
+/// use gotham_middleware_jwt::{JWTMiddleware, AuthorizationToken};
 /// use hyper::{Response, StatusCode};
 ///
 /// #[derive(Deserialize, Debug)]
@@ -60,13 +63,13 @@ use std::panic::RefUnwindSafe;
 ///     exp: usize,
 /// }
 ///
-/// fn handler(state: State) -> (State, Response) {
+/// fn handler(state: State) -> Box<HandlerFuture> {
 ///     {
 ///         let token = AuthorizationToken::<Claims>::borrow_from(&state);
 ///         // auth.token -> TokenData
 ///     }
 ///     let res = create_empty_response(&state, StatusCode::OK);
-///     (state, res)
+///     Box::new(future::ok((state, res)))
 /// }
 ///
 /// fn router() -> Router {
@@ -80,8 +83,12 @@ use std::panic::RefUnwindSafe;
 ///     let pipeline_set = finalize_pipeline_set(pipelines);
 ///     build_router(default_chain, pipeline_set, |route| {
 ///         route.get("/").to(handler);
-///     });
+///     })
 /// }
+///
+/// # fn main() {
+/// #    let _ = router();
+/// # }
 /// ```
 pub struct JWTMiddleware<T> {
     secret: &'static str,
