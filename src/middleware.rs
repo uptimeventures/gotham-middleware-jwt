@@ -3,6 +3,7 @@
 // Released under a 3-Clause BSD License. See the LICENSE file
 // at the top of this source tree. Alternatively, visit
 // https://opensource.org/licenses/BSD-3-Clause to acquire a copy.
+use crate::state_data::AuthorizationToken;
 use futures::{future, Future};
 use gotham::{
     handler::HandlerFuture,
@@ -16,7 +17,6 @@ use hyper::{
 };
 use jsonwebtoken::{decode, Validation};
 use serde::de::Deserialize;
-use crate::state_data::AuthorizationToken;
 use std::{io, marker::PhantomData, panic::RefUnwindSafe};
 
 /// This middleware verifies that JSON Web Token
@@ -127,15 +127,12 @@ where
     {
         trace!("[{}] pre-chain authentication", request_id(&state));
 
-        let token: Option<String> = {
+        let token: Option<&str> = {
             let header = HeaderMap::borrow_from(&state).get(AUTHORIZATION);
 
             match header {
                 Some(h) => match h.to_str() {
-                    Ok(hx) => {
-                        let parts: Vec<&str> = hx.rsplit(": ").collect();
-                        Some(parts[0].to_owned())
-                    }
+                    Ok(hx) => hx.get(8..),
                     Err(_) => None,
                 },
                 None => None,
@@ -149,7 +146,7 @@ where
 
         match decode::<T>(&token.unwrap(), self.secret.as_ref(), &self.validation) {
             Ok(token) => {
-                state.put(AuthorizationToken::<T>::new(token));
+                state.put(AuthorizationToken(token));
 
                 let res = chain(state).and_then(|(state, res)| {
                     trace!("[{}] post-chain jwt middleware", request_id(&state));
@@ -267,7 +264,7 @@ mod tests {
             .perform()
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+        assert_eq!(res.status(), StatusCode::BAD_REQUEST);
     }
 
     #[test]
@@ -280,7 +277,7 @@ mod tests {
             .perform()
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+        assert_eq!(res.status(), StatusCode::BAD_REQUEST);
     }
 
     #[test]
@@ -306,7 +303,7 @@ mod tests {
             .perform()
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+        assert_eq!(res.status(), StatusCode::BAD_REQUEST);
     }
 
     #[test]
