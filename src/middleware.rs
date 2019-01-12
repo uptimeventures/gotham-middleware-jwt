@@ -64,7 +64,7 @@ use std::{io, marker::PhantomData, panic::RefUnwindSafe};
 /// fn handler(state: State) -> Box<HandlerFuture> {
 ///     {
 ///         let token = AuthorizationToken::<Claims>::borrow_from(&state);
-///         // auth.token -> TokenData
+///         // token -> TokenData
 ///     }
 ///     let res = create_empty_response(&state, StatusCode::OK);
 ///     Box::new(future::ok((state, res)))
@@ -125,21 +125,18 @@ where
     where
         Chain: FnOnce(State) -> Box<HandlerFuture>,
     {
-        trace!("[{}] pre-chain authentication", request_id(&state));
+        trace!("[{}] pre-chain jwt middleware", request_id(&state));
 
-        let token: Option<&str> = {
-            let header = HeaderMap::borrow_from(&state).get(AUTHORIZATION);
-
-            match header {
-                Some(h) => match h.to_str() {
-                    Ok(hx) => hx.get(8..),
-                    Err(_) => None,
-                },
-                None => None,
-            }
+        let token = match HeaderMap::borrow_from(&state).get(AUTHORIZATION) {
+            Some(h) => match h.to_str() {
+                Ok(hx) => hx.get(8..),
+                _ => None,
+            },
+            _ => None,
         };
 
         if token.is_none() {
+            trace!("[{}] bad request jwt middleware", request_id(&state));
             let res = create_empty_response(&state, StatusCode::BAD_REQUEST);
             return Box::new(future::ok((state, res)));
         }
