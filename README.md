@@ -1,11 +1,12 @@
 # JWT Authentication Middleware
 
-[![GitLab CI Pipeline Status](https://gitlab.com/uptimeventures/gotham-middleware-jwt/badges/master/pipeline.svg)](https://gitlab.com/uptimeventures/gotham-middleware-jwt/commits/master)
-[![BSD 3-Clause
-License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://spdx.org/licenses/BSD-3-Clause.html)
-[![Dependency Status](https://deps.rs/repo/gitlab/uptimeventures/gotham-middleware-jwt/status.svg)](https://deps.rs/repo/gitlab/uptimeventures/gotham-middleware-jwt)
 [![Made by Uptime
 Ventures](https://img.shields.io/badge/made_by-Uptime_Ventures-fcb040.svg)](https://www.uptime.ventures)
+
+**Note:** This middleware is now developed in the [Gotham repository][gotham].
+Please submit PRs and support requests there.
+
+---
 
 A middleware for the [Gotham][gotham] Web Framework that verifies JSON
 Web Tokens, returning `StatusCode::UNAUTHORIZED` if a request fails
@@ -51,7 +52,7 @@ struct Claims {
 fn handler(state: State) -> Box<HandlerFuture> {
   {
     let token = AuthorizationToken::<Claims>::borrow_from(&state);
-    // auth.token -> TokenData
+    // token -> TokenData
   }
   let res = create_empty_response(&state, StatusCode::OK);
   Box::new(future::ok((state, res)))
@@ -72,18 +73,4 @@ fn router() -> Router {
 }
 ```
 
-## Contributing
-
-We (Uptime Ventures) welcome contributions from all. Take a look at the
-[Contributing Guide](CONTRIBUTING.md) to get started. If you're comfortable
-working on GitHub (where this project is mirrored), contribute there. Otherwise,
-primary development happens on
-[GitLab](https://gitlab.com/uptimeventures/gotham-middleware-jwt).
-
-## License
-
-Copyright 2018 Uptime Ventures, Ltd. All rights reserved. Released under a
-[3-Clause BSD License][license].
-
 [gotham]: https://gotham.rs
-[license]: LICENSE
